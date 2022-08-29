@@ -7,9 +7,10 @@ from django.shortcuts import get_object_or_404
 from django.shortcuts import get_list_or_404
 from .serializers import ReviewSerializer
 from movies.models import Movie
+from rest_framework.pagination import PageNumberPagination
 
 
-class ReviewsView(APIView):
+class ReviewsView(APIView, PageNumberPagination):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -18,9 +19,11 @@ class ReviewsView(APIView):
 
         reviews = get_list_or_404(Review, movie=movie)
 
-        serializer = ReviewSerializer(reviews, many=True)
+        result_page = self.paginate_queryset(reviews, request, view=self)
 
-        return Response(serializer.data)
+        serializer = ReviewSerializer(result_page, many=True)
+
+        return self.get_paginated_response(serializer.data)
 
     def post(self, request: Request, movie_id: int) -> Response:
 

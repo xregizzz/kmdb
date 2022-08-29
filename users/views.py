@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAdminUser
 from rest_framework.authentication import TokenAuthentication
 from .models import User
+from rest_framework.pagination import PageNumberPagination
 
 
 class UserLogin(APIView):
@@ -37,15 +38,18 @@ class UserView(APIView):
         return Response(serializer.data, status.HTTP_201_CREATED)
 
 
-class ProtectedUserView(APIView):
+class ProtectedUserView(APIView, PageNumberPagination):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAdminUser]
 
     def get(self, request: Request) -> Response:
         users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
 
-        return Response(serializer.data)
+        result_page = self.paginate_queryset(users, request, view=self)
+
+        serializer = UserSerializer(result_page, many=True)
+
+        return self.get_paginated_response(serializer.data)
 
 
 class ProtectedUserDetailView(APIView):
