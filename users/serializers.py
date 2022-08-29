@@ -30,3 +30,9 @@ class UserSerializer(serializers.Serializer):
         user = User.objects.create_user(**validated_data)
 
         return user
+
+
+class UserSerializerReview(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    first_name = serializers.CharField(read_only=True, max_length=50)
+    last_name = serializers.CharField(read_only=True, max_length=50)
