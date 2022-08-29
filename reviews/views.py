@@ -36,7 +36,10 @@ class ReviewsView(APIView, PageNumberPagination):
         return Response(serializer.data, status.HTTP_201_CREATED)
 
 
-class ReviewsDetailView(APIView):
+class ReviewsViewProtected(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly, IsReviewOwnerOrAdmin]
+
     def get(self, request: Request, movie_id: int, review_id: int) -> Response:
 
         review = get_object_or_404(Review, id=review_id)
@@ -44,11 +47,6 @@ class ReviewsDetailView(APIView):
         serializer = ReviewSerializer(review)
 
         return Response(serializer.data)
-
-
-class ReviewsViewProtected(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly, IsReviewOwnerOrAdmin]
 
     def delete(self, request: Request, movie_id: int, review_id: int) -> Response:
         review = get_object_or_404(Review, id=review_id)
